@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 
@@ -25,6 +24,10 @@ namespace CarGamee
 
         // ENEMY CARS
         private Image[] enemyCarSprites = null!;
+
+        // Player
+        private int playerWidth = 55;
+        private int playerHeight = 95;
 
 
         public Form1()
@@ -96,10 +99,10 @@ namespace CarGamee
 
             cars = new Image[columns];
 
-            // Create an array to hold the enemy car images
+            
             Image[] EnemyCars = new Image[columns];
 
-            //----------- PLAYER CARS -----------
+          
 
             for (int i = 0; i < columns; i++)
             {
@@ -116,7 +119,7 @@ namespace CarGamee
                 );
             }
 
-            //----------- ENEMY CARS -----------
+            
 
             for (int i = 0; i < columns; i++)
             {
@@ -155,8 +158,7 @@ namespace CarGamee
             KeyDown += Form1_KeyDown;
         }
 
-        //------------------------- UTILITY FUNCTIONS -------------------------
-
+        
         private void UpdateHoveredCar(Point mousePos)
         {
             if (!choosingCar)
@@ -176,7 +178,25 @@ namespace CarGamee
             }
         }
 
-        //--------------------------- EVENT HANDLERS ---------------------------
+        private void SelectCar(Point mousePos)
+        {
+            if (!choosingCar)
+                return;
+
+            for (int i = 0; i < carFrames.Length; i++)
+            {
+                if (carFrames[i].Contains(mousePos))
+                {
+                    playerCar = cars[i];
+                    choosingCar = false;
+                    Cursor = Cursors.Default;
+                    Invalidate();
+                    return;
+                }
+            }
+        }
+
+        
 
         private void TimerRoad_Tick(object? sender, EventArgs e)
         {
@@ -206,6 +226,7 @@ namespace CarGamee
 
         private void Form1_MouseClick(object? sender, MouseEventArgs e)
         {
+            SelectCar(e.Location);
         }
 
         private void Form1_Paint(object? sender, PaintEventArgs e)
@@ -214,10 +235,11 @@ namespace CarGamee
 
             if (choosingCar)
                 DrawCarSelection(e.Graphics);
+            else
+                DrawPlayer(e.Graphics);
         }
 
-        //--------------------------- DRAWING METHODS ---------------------------
-
+        
         private void DrawRoad(Graphics g)
         {
             g.DrawImage(
@@ -281,6 +303,19 @@ namespace CarGamee
                     frame
                 );
             }
+        }
+
+        private void DrawPlayer(Graphics g)
+        {
+            g.DrawImage(
+                playerCar,
+                new Rectangle(
+                    170,
+                    400,
+                    playerWidth,
+                    playerHeight
+                )
+            );
         }
     }
 }
