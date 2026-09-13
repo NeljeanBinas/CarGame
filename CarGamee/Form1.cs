@@ -7,14 +7,26 @@ namespace CarGamee
 {
     public partial class Form1 : Form
     {
-        // ROAD
+        //ROAD
         private System.Windows.Forms.Timer timerRoad = null!;
         private Image roadImage = null!;
         private int roadWidth;
         private int roadHeight;
         private float roadY;
 
-        // CAR SELECTION
+        // ROAD SPEED
+        private float speed = 3f;
+        private float normalSpeed = 3f;
+        private float maxSpeed = 18f;
+
+        private float acceleration = 0.08f;
+        private float deceleration = 0.05f;
+
+        private bool moveForward = false;
+        private bool isBraking = false;
+        private float brakePower = 0.15f;
+
+        //CAR SELECTION
         private Image carSpriteSheet = null!;
         private Image[] cars = null!;
         private Rectangle[] carFrames = null!;
@@ -22,14 +34,17 @@ namespace CarGamee
         private bool choosingCar = true;
         private int hoveredCar = -1;
 
-        // ENEMY CARS
+        //ENEMY CARS
         private Image[] enemyCarSprites = null!;
 
-        // Player
+        //Player
         private int playerWidth = 55;
         private int playerHeight = 95;
         private int playerX = 0;
-        private int playerY = 0;
+        private float playerY = 0;
+        private float normalPlayerY;
+        private float targetPlayerY;
+        private float playerForwardSpeed = 2f;
 
         // Lane System
         private int[] lanes = null!;
@@ -153,6 +168,10 @@ namespace CarGamee
 
         private void InitilizePlayer()
         {
+            normalPlayerY = ClientSize.Height - 120;
+            playerY = normalPlayerY;
+            targetPlayerY = playerY;
+
             lanes = new int[]
             {
                 90,
@@ -231,18 +250,81 @@ namespace CarGamee
             }
 
             currentLane = targetLane;
+
+            if (moveForward)
+                targetPlayerY = normalPlayerY - 35;
+            else
+                targetPlayerY = normalPlayerY;
+
+            if (playerY < targetPlayerY)
+            {
+                playerY += playerForwardSpeed;
+
+                if (playerY > targetPlayerY)
+                    playerY = targetPlayerY;
+            }
+
+            if (playerY > targetPlayerY)
+            {
+                playerY -= playerForwardSpeed;
+
+                if (playerY < targetPlayerY)
+                    playerY = targetPlayerY;
+            }
         }
 
-        private void TimerRoad_Tick(object? sender, EventArgs e)
+        private void UpdateRoad()
         {
-            roadY += 5;
+            roadY += speed;
 
             if (roadY >= roadHeight)
                 roadY -= roadHeight;
 
             if (roadY < 0)
                 roadY += roadHeight;
+        }
 
+        private void UpdateSpeed()
+        {
+            if (moveForward)
+            {
+                speed += acceleration;
+
+                if (speed > maxSpeed)
+                    speed = maxSpeed;
+            }
+            else if (isBraking)
+            {
+                speed -= brakePower;
+
+                if (speed < 0)
+                    speed = 0;
+            }
+            else
+            {
+                if (speed > normalSpeed)
+                {
+                    speed -= deceleration;
+
+                    if (speed < normalSpeed)
+                        speed = normalSpeed;
+                }
+
+                if (speed < normalSpeed)
+                {
+                    speed += deceleration;
+
+                    if (speed > normalSpeed)
+                        speed = normalSpeed;
+                }
+            }
+        }
+
+        
+        private void TimerRoad_Tick(object? sender, EventArgs e)
+        {
+            UpdateSpeed();
+            UpdateRoad();
             UpdatePlayerPosition();
             Invalidate();
         }
@@ -252,18 +334,32 @@ namespace CarGamee
             if (choosingCar)
                 return;
 
-            if (e.KeyCode == Keys.Left && targetLane > 0)
+            if ((e.KeyCode == Keys.Left || e.KeyCode == Keys.A) &&
+                targetLane > 0)
+            {
                 targetLane--;
+            }
 
-            if (e.KeyCode == Keys.Right &&
+            if ((e.KeyCode == Keys.Right || e.KeyCode == Keys.D) &&
                 targetLane < lanes.Length - 1)
             {
                 targetLane++;
             }
+
+            if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
+                moveForward = true;
+
+            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
+                isBraking = true;
         }
 
         private void Form1_KeyUp(object? sender, KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
+                moveForward = false;
+
+            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
+                isBraking = false;
         }
 
         private void Form1_MouseMove(object? sender, MouseEventArgs e)
@@ -286,12 +382,15 @@ namespace CarGamee
                 DrawPlayer(e.Graphics);
         }
 
+        
         private void DrawRoad(Graphics g)
         {
+            int y = (int)roadY;
+
             g.DrawImage(
                 roadImage,
                 0,
-                roadY,
+                y,
                 roadWidth,
                 roadHeight
             );
@@ -299,7 +398,7 @@ namespace CarGamee
             g.DrawImage(
                 roadImage,
                 0,
-                roadY - roadHeight,
+                y - roadHeight,
                 roadWidth,
                 roadHeight
             );
