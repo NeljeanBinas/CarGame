@@ -63,9 +63,18 @@ namespace CarGamee
 
         // Lane System
         private int[] lanes = null!;
+
         private int currentLane;
+
         private int targetLane;
+
         private int laneSpeed = 8;
+
+        //Distance
+
+        private float totalDistanceMeters = 0f;
+
+        private float pixelperMeter = 12f;
 
         public Form1()
         {
@@ -139,6 +148,8 @@ namespace CarGamee
 
             Image[] EnemyCars = new Image[columns];
 
+            // Create an array to hold the enemy car images
+            //----------- PLAYER CARS ----------- 
             for (int i = 0; i < columns; i++)
             {
                 Rectangle src = new Rectangle(
@@ -154,6 +165,7 @@ namespace CarGamee
                 );
             }
 
+            //----------- ENEMY CARS ----------- 
             for (int i = 0; i < columns; i++)
             {
                 Rectangle src = new Rectangle(
@@ -209,6 +221,7 @@ namespace CarGamee
             KeyDown += Form1_KeyDown;
         }
 
+        //-------------------------  UTILITY FUNCTIONS -------------------------
         private void UpdateHoveredCar(Point mousePos)
         {
             if (!choosingCar)
@@ -267,6 +280,7 @@ namespace CarGamee
 
             currentLane = targetLane;
 
+            // Update playerY based on acceleration and braking
             if (moveForward)
                 targetPlayerY = normalPlayerY - 35;
             else
@@ -293,6 +307,9 @@ namespace CarGamee
         {
             roadY += speed;
 
+            if (!choosingCar)
+                totalDistanceMeters += speed / pixelperMeter;
+
             if (roadY >= roadHeight)
                 roadY -= roadHeight;
 
@@ -302,6 +319,7 @@ namespace CarGamee
 
         private void UpdateSpeed()
         {
+            //Acceleration
             if (moveForward)
             {
                 speed += acceleration;
@@ -310,6 +328,7 @@ namespace CarGamee
                     speed = maxSpeed;
             }
 
+            //Brake
             else if (isBraking)
             {
                 speed -= brakePower;
@@ -318,8 +337,10 @@ namespace CarGamee
                     speed = 0;
             }
 
+            //Coast
             else
             {
+                //Gradually return to normalSpeed
                 if (speed > normalSpeed)
                 {
                     speed -= deceleration;
@@ -328,6 +349,7 @@ namespace CarGamee
                         speed = normalSpeed;
                 }
 
+                //Gradually return to normalSpeed
                 if (speed < normalSpeed)
                 {
                     speed += deceleration;
@@ -338,6 +360,7 @@ namespace CarGamee
             }
         }
 
+        //--------------------------- EVENT HANDLERS ---------------------------
         private void TimerRoad_Tick(object? sender, EventArgs e)
         {
             UpdateSpeed();
@@ -397,9 +420,11 @@ namespace CarGamee
                 DrawCarSelection(e.Graphics);
             else
                 DrawPlayer(e.Graphics);
+
+            DrawDebugInfo(e.Graphics);
         }
 
-        
+        //--------------------------- DRAWING METHODS ---------------------------
         private void DrawRoad(Graphics g)
         {
             int y = (int)roadY;
@@ -497,6 +522,45 @@ namespace CarGamee
                         8
                     );
                 }
+            }
+        }
+
+        private void DrawDebugInfo(Graphics g)
+        {
+            //Draw debug info Overlay
+            using (Brush overlay = new SolidBrush(
+                Color.FromArgb(160, 0, 0, 0)))
+            {
+                g.FillRectangle(
+                    overlay,
+                    new Rectangle(
+                        5,
+                        ClientSize.Height - 105,
+                        150,
+                        100
+                    )
+                );
+            }
+
+            // Draw debug info
+            using (Font font = new Font(
+                "Arial",
+                10,
+                FontStyle.Regular))
+            {
+                string debugtext =
+                    $"Speed: {speed:f2}\n" +
+                    $"Distance: {totalDistanceMeters:F2} m\n" +
+                    $"Player Lane: {currentLane}\n" +
+                    $"Target Lane: {targetLane}";
+
+                g.DrawString(
+                    debugtext,
+                    font,
+                    Brushes.Yellow,
+                    0,
+                    ClientSize.Height - 100
+                );
             }
         }
     }
