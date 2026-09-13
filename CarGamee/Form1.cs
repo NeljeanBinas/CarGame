@@ -9,9 +9,13 @@ namespace CarGamee
     {
         //ROAD
         private System.Windows.Forms.Timer timerRoad = null!;
+
         private Image roadImage = null!;
+
         private int roadWidth;
+
         private int roadHeight;
+
         private float roadY;
 
         // ROAD SPEED
@@ -28,10 +32,15 @@ namespace CarGamee
 
         //CAR SELECTION
         private Image carSpriteSheet = null!;
+
         private Image[] cars = null!;
+
         private Rectangle[] carFrames = null!;
+
         private Image playerCar = null!;
+
         private bool choosingCar = true;
+
         private int hoveredCar = -1;
 
         //ENEMY CARS
@@ -39,11 +48,17 @@ namespace CarGamee
 
         //Player
         private int playerWidth = 55;
+
         private int playerHeight = 95;
+
         private int playerX = 0;
+
         private float playerY = 0;
+
         private float normalPlayerY;
+
         private float targetPlayerY;
+
         private float playerForwardSpeed = 2f;
 
         // Lane System
@@ -161,6 +176,7 @@ namespace CarGamee
                 new Rectangle(40, 120, 80, 120),
                 new Rectangle(170, 120, 80, 120),
                 new Rectangle(300, 120, 80, 120),
+
                 new Rectangle(100, 280, 80, 120),
                 new Rectangle(240, 280, 80, 120)
             };
@@ -293,6 +309,7 @@ namespace CarGamee
                 if (speed > maxSpeed)
                     speed = maxSpeed;
             }
+
             else if (isBraking)
             {
                 speed -= brakePower;
@@ -300,6 +317,7 @@ namespace CarGamee
                 if (speed < 0)
                     speed = 0;
             }
+
             else
             {
                 if (speed > normalSpeed)
@@ -320,7 +338,6 @@ namespace CarGamee
             }
         }
 
-        
         private void TimerRoad_Tick(object? sender, EventArgs e)
         {
             UpdateSpeed();
@@ -454,13 +471,33 @@ namespace CarGamee
         {
             g.DrawImage(
                 playerCar,
-                new Rectangle(
-                    playerX,
-                    400,
-                    playerWidth,
-                    playerHeight
-                )
+                playerX,
+                (int)playerY,
+                playerWidth,
+                playerHeight
             );
+
+            if (isBraking)
+            {
+                using (Brush brush = new SolidBrush(Color.Red))
+                {
+                    g.FillEllipse(
+                        brush,
+                        playerX + 10,
+                        playerY + playerHeight - 10,
+                        8,
+                        8
+                    );
+
+                    g.FillEllipse(
+                        brush,
+                        playerX + playerWidth - 18,
+                        playerY + playerHeight - 10,
+                        8,
+                        8
+                    );
+                }
+            }
         }
     }
 }
