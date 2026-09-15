@@ -270,7 +270,23 @@ namespace CarGamee
 
         private void SpawnEnemy()
         {
-            SpawnInLane(rnd.Next(4), -enemyHeight);
+            int[] pattern;
+            int km = (int)(totalDistanceMeters / 1000);
+
+            if (km <= 1)
+                SpawnInLane(rnd.Next(4), -enemyHeight);
+            else if (km < 3)
+            {
+                pattern = trafficPatterns[rnd.Next(8)];
+                foreach (int lane in pattern)
+                    SpawnInLane(lane, -enemyHeight);
+            }
+            else
+            {
+                pattern = trafficPatterns[trafficPatterns.Length - 1];
+                foreach (int lane in pattern)
+                    SpawnInLane(lane, -enemyHeight);
+            }
         }
 
         private void SpawnInLane(int lane, float y)
@@ -564,7 +580,7 @@ namespace CarGamee
             if (gameOver)
                 DrawGameOver(e.Graphics);
 
-            DrawDebugInfo(e.Graphics);
+            //DrawDebugInfo(e.Graphics);
         }
 
 
@@ -585,7 +601,12 @@ namespace CarGamee
             {
                 string text = "Choose Your Car";
                 SizeF textSize = g.MeasureString(text, font);
-                g.DrawString(text, font, Brushes.White, (ClientSize.Width - textSize.Width) / 2, 20);
+                g.DrawString(
+                    text,
+                    font,
+                    Brushes.White,
+                    (ClientSize.Width - textSize.Width) / 2,
+                    20);
             }
 
             for (int i = 0; i < cars.Length; i++)
@@ -602,14 +623,30 @@ namespace CarGamee
 
         private void DrawPlayer(Graphics g)
         {
-            g.DrawImage(playerCar, playerX, (int)playerY, playerWidth, playerHeight);
+            g.DrawImage(
+                playerCar,
+                playerX,
+                (int)playerY,
+                playerWidth,
+                playerHeight);
 
             if (isBraking)
             {
                 using (Brush brush = new SolidBrush(Color.Red))
                 {
-                    g.FillEllipse(brush, playerX + 10, playerY + playerHeight - 10, 8, 8);
-                    g.FillEllipse(brush, playerX + playerWidth - 18, playerY + playerHeight - 10, 8, 8);
+                    g.FillEllipse(
+                        brush,
+                        playerX + 10,
+                        playerY + playerHeight - 10,
+                        8,
+                        8);
+
+                    g.FillEllipse(
+                        brush,
+                        playerX + playerWidth - 18,
+                        playerY + playerHeight - 10,
+                        8,
+                        8);
                 }
             }
         }
@@ -664,7 +701,13 @@ namespace CarGamee
 
             //Draw debug info Overlay
             using (Brush overlay = new SolidBrush(Color.FromArgb(160, 0, 0, 0)))
-                g.FillRectangle(overlay, new Rectangle(5, ClientSize.Height - 105, 150, 100));
+                g.FillRectangle(
+                    overlay,
+                    new Rectangle(
+                        5,
+                        ClientSize.Height - 105,
+                        150,
+                        100));
 
             // Draw debug info
             using (Font font = new Font("Arial", 10, FontStyle.Regular))
@@ -675,7 +718,13 @@ namespace CarGamee
                                    $"Player Lane: {currentLane}\n" +
                                    $"Target Lane: {targetLane}\n" +
                                    $"Enemy Active: {activeEnenmies}";
-                g.DrawString(debugtext, font, Brushes.Yellow, 0, ClientSize.Height - 100);
+
+                g.DrawString(
+                    debugtext,
+                    font,
+                    Brushes.Yellow,
+                    0,
+                    ClientSize.Height - 100);
             }
         }
 
@@ -715,6 +764,7 @@ namespace CarGamee
 
             //SPEED
             DrawHudPanel(g, new Rectangle(10, 10, 120, 55));
+
             using (Font big = new Font("Segoe UI", 22, FontStyle.Bold))
             using (Font small = new Font("Segoe UI", 10))
             {
@@ -734,7 +784,9 @@ namespace CarGamee
             }
 
             // Distance
-            DrawHudPanel(g, new Rectangle(ClientSize.Width - 120, 10, 110, 45));
+            DrawHudPanel(
+                g,
+                new Rectangle(ClientSize.Width - 120, 10, 110, 45));
 
             float km = totalDistanceMeters / 1000f;
 
@@ -757,10 +809,15 @@ namespace CarGamee
 
             // Score
             score = (int)(totalDistanceMeters * speed);
-            DrawHudPanel(g, new Rectangle(ClientSize.Width - 110, 70, 100, 55));
 
-            using (Font scoreFontlabel = new Font("Segoe UI", 10, FontStyle.Bold))
-            using (Font scoreFont = new Font("Segoe UI", 14, FontStyle.Bold))
+            DrawHudPanel(
+                g,
+                new Rectangle(ClientSize.Width - 110, 70, 100, 55));
+
+            using (Font scoreFontlabel =
+                   new Font("Segoe UI", 10, FontStyle.Bold))
+            using (Font scoreFont =
+                   new Font("Segoe UI", 14, FontStyle.Bold))
             {
                 g.DrawString(
                     score.ToString(),
@@ -784,19 +841,46 @@ namespace CarGamee
 
             int r = 10;
 
-            path.AddArc(rect.Left, rect.Top, r, r, 180, 90);
-            path.AddArc(rect.Right - r, rect.Top, r, r, 270, 90);
-            path.AddArc(rect.Right - r, rect.Bottom - r, r, r, 0, 90);
-            path.AddArc(rect.Left, rect.Bottom - r, r, r, 90, 90);
+            path.AddArc(
+                rect.Left,
+                rect.Top,
+                r,
+                r,
+                180,
+                90);
+
+            path.AddArc(
+                rect.Right - r,
+                rect.Top,
+                r,
+                r,
+                270,
+                90);
+
+            path.AddArc(
+                rect.Right - r,
+                rect.Bottom - r,
+                r,
+                r,
+                0,
+                90);
+
+            path.AddArc(
+                rect.Left,
+                rect.Bottom - r,
+                r,
+                r,
+                90,
+                90);
 
             path.CloseFigure();
 
             using (SolidBrush b =
-                new SolidBrush(Color.FromArgb(160, 25, 25, 25)))
+                   new SolidBrush(Color.FromArgb(160, 25, 25, 25)))
                 g.FillPath(b, path);
 
             using (Pen p =
-                new Pen(Color.FromArgb(70, Color.White)))
+                   new Pen(Color.FromArgb(70, Color.White)))
                 g.DrawPath(p, path);
 
             path.Dispose();
