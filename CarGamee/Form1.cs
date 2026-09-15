@@ -8,6 +8,7 @@ namespace CarGamee
     public partial class Form1 : Form
     {
         private Random rnd = new Random();
+        private bool Collide = false;
 
         //ROAD
         private System.Windows.Forms.Timer timerRoad = null!;
@@ -304,6 +305,45 @@ namespace CarGamee
             return true;
         }
 
+        private void CheckCollision()
+        {
+            // PlayerHitbox
+            Rectangle playerRect = new Rectangle(
+                playerX + 8,
+                (int)playerY + 8,
+                playerWidth - 16,
+                playerHeight - 16
+                );
+
+            //Enemies
+            for (int i = 0; i < MAX_ENEMIES; i++)
+            {
+                if (!enemyActive[i])
+                    continue;
+
+                Rectangle enemyRect = new Rectangle(
+                    lanes[enemyLane[i]] + 8,
+                    (int)enemyY[i] + 8,
+                    enemyWidth - 16,
+                    enemyHeight - 16
+                    );
+
+                if (playerRect.IntersectsWith(enemyRect))
+                {
+                    Collide = true;
+                    Invalidate();
+                    return;
+                }
+                else
+                {
+                    Collide = false;
+                    Invalidate();
+                    return;
+                }
+
+            }
+        }
+
         //----------------------------- UPDATE METHODS -------------------------
         private void UpdatePlayerPosition()
         {
@@ -434,6 +474,7 @@ namespace CarGamee
             UpdateRoad();
             UpdatePlayerPosition();
             updateEnemySpeed();
+            CheckCollision();
             Invalidate();
         }
 
@@ -463,6 +504,7 @@ namespace CarGamee
 
             if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
                 isBraking = false;
+
         }
 
         private void Form1_MouseMove(object? sender, MouseEventArgs e)
@@ -561,9 +603,27 @@ namespace CarGamee
                 if (enemyActive[i])
                 {
                     activeEnenmies++;
+
+                    Rectangle enemyRect = new Rectangle(
+                        lanes[enemyLane[i]] + 8,
+                        (int)enemyY[i] + 8,
+                        enemyWidth - 16,
+                        enemyHeight - 16
+                        );
+
+                    g.DrawRectangle(Pens.Red, enemyRect);
                 }
             }
 
+            // PlayerHitbox
+            Rectangle playerRect = new Rectangle(
+                playerX + 8,
+                (int)playerY + 8,
+                playerWidth - 16,
+                playerHeight - 16
+                );
+
+            g.DrawRectangle(Pens.Lime, playerRect);
 
             //Draw debug info Overlay
             using (Brush overlay = new SolidBrush(Color.FromArgb(160, 0, 0, 0)))
@@ -574,6 +634,7 @@ namespace CarGamee
             {
                 string debugtext = $"Speed: {speed:f2}\n" +
                                    $"Distance: {totalDistanceMeters:f2} m\n" +
+                                   $"Collided: {Collide}\n" +
                                    $"Player Lane: {currentLane}\n" +
                                    $"Target Lane: {targetLane}\n" +
                                    $"Enemy Active: {activeEnenmies}";
